@@ -6,7 +6,17 @@ from markdown_to_html_node import markdown_to_html_node
 
 def main():
     cp_files("./static", "./public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages("content", "template.html", "public")
+
+
+def generate_pages(content_dir_path, template_path, dest_dir_path):
+    for d in os.listdir(content_dir_path):
+        if os.path.isfile(os.path.join(content_dir_path, d)):
+            if d.endswith(".md"):
+                fname = d.rstrip(".md") + ".html"
+                generate_page(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, fname))
+        else:
+            generate_pages(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, d))
 
 
 def generate_page(from_path, template_path, dest_path):
