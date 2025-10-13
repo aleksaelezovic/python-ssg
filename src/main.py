@@ -1,9 +1,31 @@
 import os
 import shutil
 
+from markdown_to_html_node import markdown_to_html_node
+
 
 def main():
     cp_files("./static", "./public")
+    generate_page("content/index.md", "template.html", "public/index.html")
+
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    from_doc = None
+    with open(from_path) as f:
+        from_doc = f.read()
+    template_doc = None
+    with open(template_path) as f:
+        template_doc = f.read()
+    title = extract_title(from_doc)
+    content = markdown_to_html_node(from_doc).to_html()
+    page = template_doc.replace("{{ Title }}", title).replace("{{ Content }}", content)
+
+    dest_path = os.path.abspath(dest_path)
+    dest_dir = os.path.dirname(dest_path)
+    os.makedirs(dest_dir, exist_ok=True)
+    with open(dest_path, "w+") as f:
+        f.write(page)
 
 
 def extract_title(markdown):
