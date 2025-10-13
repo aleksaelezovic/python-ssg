@@ -1,25 +1,27 @@
 import os
 import shutil
+import sys
 
 from markdown_to_html_node import markdown_to_html_node
 
 
 def main():
-    cp_files("./static", "./public")
-    generate_pages("content", "template.html", "public")
+    basepath = sys.argv[1] if len(sys.argv) >= 2 else "/"
+    cp_files("./static", "./docs")
+    generate_pages("content", "template.html", "docs", basepath)
 
 
-def generate_pages(content_dir_path, template_path, dest_dir_path):
+def generate_pages(content_dir_path, template_path, dest_dir_path, basepath):
     for d in os.listdir(content_dir_path):
         if os.path.isfile(os.path.join(content_dir_path, d)):
             if d.endswith(".md"):
                 fname = d.rstrip(".md") + ".html"
-                generate_page(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, fname))
+                generate_page(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, fname), basepath)
         else:
-            generate_pages(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, d))
+            generate_pages(os.path.join(content_dir_path, d), template_path, os.path.join(dest_dir_path, d), basepath)
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     from_doc = None
     with open(from_path) as f:
@@ -30,6 +32,7 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(from_doc)
     content = markdown_to_html_node(from_doc).to_html()
     page = template_doc.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    page = page.replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
 
     dest_path = os.path.abspath(dest_path)
     dest_dir = os.path.dirname(dest_path)
